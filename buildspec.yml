@@ -1,0 +1,15 @@
+version: 0.1
+
+phases:
+  build:
+    commands:
+      - echo Build started on `date`
+  pre_build:
+    commands:
+      - export TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+  post_build:
+    commands:
+      - echo Running post_build commands
+      - zip -r artifact-$STACK_ENVIRONMENT-$GIT_REPO_NAME-${TIMESTAMP}-$CODEBUILD_BUILD_ID.zip .
+      - aws s3 cp artifact-$STACK_ENVIRONMENT-$GIT_REPO_NAME-${TIMESTAMP}-$CODEBUILD_BUILD_ID.zip s3://$S3_BUCKET/artifact-$STACK_ENVIRONMENT-$GIT_REPO_NAME-${TIMESTAMP}-$CODEBUILD_BUILD_ID.zip
+      - aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --zip-file fileb://artifact-$STACK_ENVIRONMENT-$GIT_REPO_NAME-${TIMESTAMP}-$CODEBUILD_BUILD_ID.zip
